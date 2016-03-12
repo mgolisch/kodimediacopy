@@ -1,7 +1,8 @@
+import os, shutil
 from flask.ext.script import Manager
 
 from kodimediacopy import app, db
-from kodimediacopy.models import User, Posters
+from kodimediacopy.models import User, Posters, FileCopy
 from kodimediacopy.kodimodels import Movie, Tvshow
 manager = Manager(app)
 
@@ -75,50 +76,70 @@ def updateart():
     for movie in Movie.query.all():
         print 'processing %s' % movie.c00
         imdbid = movie.c09
-        if Posters.query.filter_by(imdbid=imdbid).first() is not None:
+        if Posters.query.filter_by(apiid=imdbid).first() is not None:
             print 'skipping %s as it is allready in the database' % movie.c00
             continue
-        title = imdb.get_title_by_id(imdbid)
-        if title.cover_url is None:
+        try:
+            title = imdb.get_title_by_id(imdbid)
+            if title.cover_url is None:
+                continue
+            poster = Posters()
+            poster.apiid = imdbid
+            poster.type = 'movie'
+            response = urllib.urlopen(title.cover_url)
+            data = response.read()
+            data64 = data.encode('base64').replace('\n', '')
+            poster.imgdata = 'data:image/jpeg;base64,%s' % data64
+            # print poster.imgdata
+            db.session.add(poster)
+            db.session.commit()
+        except:
             continue
-        poster = Posters()
-        poster.imdbid = imdbid
-        poster.type = 'movie'
-        response = urllib.urlopen(title.cover_url)
-        data = response.read()
-        data64 = data.encode('base64').replace('\n', '')
-        poster.imgdata = 'data:image/jpeg;base64,%s' % data64
-        # print poster.imgdata
-        db.session.add(poster)
-        db.session.commit()
     print 'updating art for tv'
     from tvdb_api import Tvdb
     t = Tvdb(banners = True)
     for show in Tvshow.query.all():
         print 'processing %s' % show.c00
         tvdbid = show.c12
-        if Posters.query.filter_by(tvdbid=tvdbid).first() is not None:
+        if Posters.query.filter_by(apiid=tvdbid).first() is not None:
             print 'skipping %s as it is allready in the database' % show.c00 
             continue
         try:
             tvdbshow = t[int(tvdbid)]
             bannerkeys = tvdbshow['_banners']['season']['season'].keys()
             banner_url = tvdbshow['_banners']['season']['season'][bannerkeys[0]]['_bannerpath']
+            poster = Posters()
+            poster.apiid = tvdbid
+            poster.type = 'tv'
+            response = urllib.urlopen(banner_url)
+            data = response.read()
+            data64 = data.encode('base64').replace('\n', '')
+            poster.imgdata = 'data:image/jpeg;base64,%s' % data64
+            # print poster.imgdata
+            db.session.add(poster)
+            db.session.commit()
         except:
             continue
-        poster = Posters()
-        poster.tvdbid = tvdbid
-        poster.type = 'tv'
-        response = urllib.urlopen(banner_url)
-        data = response.read()
-        data64 = data.encode('base64').replace('\n', '')
-        poster.imgdata = 'data:image/jpeg;base64,%s' % data64
-        # print poster.imgdata
-        db.session.add(poster)
-        db.session.commit()
 
 
 
+@manager.option('-d','--directory',dest='directory',default='/mnt/usb/mediacopy/')
+def copyfiles(directory):
+    for user in User.query.all():
+        print 'processing files for user: %s' % user.username 
+        basepath = os.path.join(directory,user.username)
+        if not os.path.exists(basepath):
+            os.mkdir(basepath)
+        for filecopy in FileCopy.query.filter_by(userid=user.id).all():
+            filepath = os.path.join(filecopy.filepath,filecopy.filename)
+            print 'copying file: %s' % filepath
+            try:
+                shutil.copy(filepath,basepath)
+            except:
+                continue
+            filecopy.copied = True
+            db.session.add(filecopy)
+            db.session.commit()
 
 
 

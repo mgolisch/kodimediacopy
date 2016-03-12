@@ -9,7 +9,7 @@
         <thead>
         <tr>
             <td>Name</td>
-			<td>Poster</td>
+			<td>Thumbnail</td>
             <td>First Aired</td>
             <td>TVdb</td>
         </tr>
@@ -18,7 +18,7 @@
         {% for show in shows %}
          <tr>
             <td>{{show.c00}}</td>
-			<td><img height="200px" width="200px"  src="{{ posters[show.c12]}}"/></td>
+			<td><img height="200px" width="200px" class="img-thumbnail" src="{{ posters[show.c12]}}"/></td>
             <td>{{show.c05}}</td>
             <td><a href="http://thetvdb.com/index.php?tab=series&id={{show.c12}}" target="_blank">Link</a></td>
         </tr>

@@ -1,6 +1,6 @@
 from kodimediacopy import app, db
-from kodimediacopy.models import User, Posters
-from kodimediacopy.kodimodels import Movie, File, t_streamdetails, Tvshow
+from kodimediacopy.models import User, Posters, FileCopy
+from kodimediacopy.kodimodels import Movie, File, t_streamdetails, Tvshow, Path
 from flask import render_template, redirect, session, flash, url_for
 from functools import wraps
 
@@ -67,7 +67,7 @@ def build_streaminfo_dict():
                 return streaminfo
 
     streaminfocollection = StreaminfoCollection()
-    streaminfos = db.session.query(t_streamdetails).all() 
+    streaminfos = db.session.query(t_streamdetails).all()
     for streaminfo in streaminfos:
         streaminfo_obj = streaminfocollection.get(streaminfo.idFile)
         streaminfo_obj.add_stream(streaminfo)
@@ -107,10 +107,13 @@ def logout():
 @app.route('/movies')
 @login_required
 def show_movies():
+    userid = session['user_id']
     movies = Movie.query.order_by(Movie.c00).all()
     streaminfo_dict = build_streaminfo_dict()
-    posterdict = {poster.imdbid: poster.imgdata for poster in Posters.query.filter_by(type='movie').all()}
-    return render_template('movies.html', movies=movies, posters=posterdict, streaminfos=streaminfo_dict)
+    posterdict = {poster.apiid: poster.imgdata for poster in Posters.query.filter_by(type='movie').all()}
+    filecopies = {filecopy.fileid: filecopy for filecopy in FileCopy.query.filter_by(userid=userid).all()}
+    print len(filecopies)
+    return render_template('moviesthumb.html', movies=movies, posters=posterdict, streaminfos=streaminfo_dict, filecopies=filecopies)
 
 
 @app.route('/shows')
@@ -118,6 +121,21 @@ def show_movies():
 def show_tv():
     shows = Tvshow.query.order_by(Tvshow.c00).all()
     streaminfo_dict = build_streaminfo_dict()
-    posterdict = {poster.tvdbid: poster.imgdata for poster in Posters.query.filter_by(type='tv').all()}
+    posterdict = {poster.apiid: poster.imgdata for poster in Posters.query.filter_by(type='tv').all()}
     return render_template('shows.html', shows=shows, posters=posterdict, streaminfos=streaminfo_dict)
-    
+
+@app.route('/movies/add/<string:fileid>')
+@login_required
+def add_movie(fileid):
+    file = File.query.filter_by(idFile=fileid).first()
+    path = Path.query.filter_by(idPath=file.idPath).first()
+    filecopy = FileCopy()
+    filecopy.fileid = fileid
+    filecopy.type='movie'
+    filecopy.filename = file.strFilename
+    filecopy.filepath = path.strPath
+    filecopy.userid = session['user_id']
+    db.session.add(filecopy)
+    db.session.commit()
+    flash('marked movie')
+    return redirect(url_for('show_movies')+'#'+str(file.idFile))

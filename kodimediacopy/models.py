@@ -23,6 +23,8 @@ class FileCopy(db.Model):
     filename = db.Column(db.String)
     filepath = db.Column(db.String)
     type = db.Column(db.String) #tv or movie
+    userid = db.Column(db.Integer)
+    copied = db.Column(db.Boolean)
 
     def __repr__(self):
         return '<FileCopy|type:%s|name:%s' % self.type, self.filename
@@ -32,5 +34,4 @@ class Posters(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String) #tv or movie
     imgdata = db.Column(db.Text) # base64 encoded image data using data-uri notation
-    imdbid = db.Column(db.String)
-    tvdbid = db.Column(db.String)
+    apiid = db.Column(db.String) # imdbid|movies or tvdbid|tv , maybe anidbid|anime in future

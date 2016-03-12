@@ -21,7 +21,7 @@
         {% for movie in movies %}
          <tr>
             <td>{{movie.c00}}</td>
-			<td><img height="200px" width="200px"  src="{{ posters[movie.c09]}}"/></td>
+			<td><img height="200px" width="200px" class="img-thumbnail"  src="{{ posters[movie.c09]}}"/></td>
             <td>{{movie.c07}}</td>
 			<td>{{ streaminfos.get(movie.idFile).render_video() |safe}}</td>
 			<td>{{ streaminfos.get(movie.idFile).render_audio() |safe}}</td>
