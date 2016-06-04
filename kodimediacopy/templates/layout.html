@@ -18,8 +18,9 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-		  <!--<li><a href="{{ url_for('show_tv')}}">TV Shows </a></li>-->
         <li><a href="{{ url_for('show_movies')}}">Movies</a></li>
+	    <li><a href="{{ url_for('show_tv')}}">TV Shows </a></li>
+        <li><a href="{{ url_for('manage_marks')}}">Marked Media</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
     {% if 'logged_in' in session %}
@@ -45,10 +46,11 @@
       <div class="col-md-12">
         {{utils.flashed_messages(messages)}}
       </div>
-
     </div>
 
   {%- endif %}
   {%- endwith %}
-
+  {% block page_content %}
+  {% endblock %}
+</div> <!-- container -->
 {% endblock %}

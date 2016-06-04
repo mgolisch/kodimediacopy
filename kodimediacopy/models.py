@@ -23,12 +23,24 @@ class FileCopy(db.Model):
     filename = db.Column(db.String)
     filepath = db.Column(db.String)
     type = db.Column(db.String) #tv or movie
-    userid = db.Column(db.Integer)
-    copied = db.Column(db.Boolean)
+    userid = db.Column(db.Integer,db.ForeignKey('user.id'))
+    user = db.relationship('User',backref=db.backref('filecopies',lazy='dynamic')) 
+    copied = db.Column(db.Boolean,default=False)
 
     def __repr__(self):
-        return '<FileCopy|type:%s|name:%s' % self.type, self.filename
+        return '<FileCopy|type:%s|name:%s>' % (self.type, self.filename)
 
+    def serialize(self):
+        return {
+            'id':self.id,
+            'fileid':self.fileid,
+            'filename':self.filename,
+            'filepath':self.filepath,
+            'type':self.type,
+            'userid':self.userid,
+            'username':self.user.username,
+            'copied':self.copied
+        }
 
 class Posters(db.Model):
     id = db.Column(db.Integer, primary_key=True)

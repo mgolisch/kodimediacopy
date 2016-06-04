@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 
+
 {% block title %}Movies Listing{% endblock %}
 {% block scripts %}
     {{super()}}
@@ -13,8 +14,7 @@ $( document ).ready(function() {
 </script>
 {% endblock %}
 
-{% block content %}
-    {{super()}}
+{% block page_content %}
         {% for movie in movies %}
 		{% if loop.index%3==1 %}
 		<div class="row">
@@ -29,7 +29,8 @@ $( document ).ready(function() {
 						<p>Video:{{ streaminfos.get(movie.idFile).render_video() |safe}}</p>
 						<p>Audio:{{ streaminfos.get(movie.idFile).render_audio() |safe}}</p>
 						<p>Subtitle:{{ streaminfos.get(movie.idFile).render_subtitle() |safe}}</p>
-						<p><a href="{{url_for('add_movie',fileid=movie.idFile)}}" {% if movie.idFile not in filecopies %} class="btn btn-primary">Mark {% else %} {%if filecopies[movie.idFile].copied %} class="btn btn-success">Copied {% else %} class="btn btn-default">Marked {% endif %} {% endif %} </a> <a href="http://www.imdb.com/title/{{movie.c09}}/" target="_blank" class="btn btn-default">IMDB</a></p>
+						<p><a href="{{url_for('add_movie',fileid=movie.idFile)}}" {% if movie.idFile not in filecopies %} class="btn btn-primary">Mark {% else %} {%if filecopies[movie.idFile].copied %} class="btn btn-success">Copied {% else %} class="btn btn-default">Marked {% endif %} {% endif %} </a> 
+						<a href="http://www.imdb.com/title/{{movie.c09}}/" target="_blank" class="btn btn-default">IMDB</a></p>
                     </div>
                 </div>
             </div>
@@ -38,5 +39,4 @@ $( document ).ready(function() {
 		</div><!-- row -->
 		{%endif%}
         {% endfor %}
-</div>
 {% endblock %}

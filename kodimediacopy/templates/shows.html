@@ -3,7 +3,7 @@
 {% block title %}TV Show Listing{% endblock %}
 
 
-{% block content %}
+{% block page_content %}
     {{super()}}
     <table class="table">
         <thead>
@@ -12,6 +12,7 @@
 			<td>Thumbnail</td>
             <td>First Aired</td>
             <td>TVdb</td>
+			<td>Episodes</td>
         </tr>
         </thead>
         <tbody>
@@ -21,9 +22,9 @@
 			<td><img height="200px" width="200px" class="img-thumbnail" src="{{ posters[show.c12]}}"/></td>
             <td>{{show.c05}}</td>
             <td><a href="http://thetvdb.com/index.php?tab=series&id={{show.c12}}" target="_blank">Link</a></td>
+			<td><a href="{{url_for('show_tv_episodes',id=show.idShow)}}">Show Episodes</a></td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
-</div>
 {% endblock %}

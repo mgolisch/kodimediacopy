@@ -1,4 +1,4 @@
-import os, shutil
+import sys, os, shutil, requests
 from flask.ext.script import Manager
 
 from kodimediacopy import app, db
@@ -123,6 +123,7 @@ def updateart():
 
 
 
+
 @manager.option('-d','--directory',dest='directory',default='/mnt/usb/mediacopy/')
 def copyfiles(directory):
     for user in User.query.all():
@@ -142,8 +143,31 @@ def copyfiles(directory):
             db.session.commit()
 
 
-
-
+@manager.option('-d','--directory',dest='directory',default='/mnt/usb/mediacopy/')
+@manager.option('-u','--url',dest='url',default='http://127.0.0.1:5000')
+def copyfiles_remote(directory,url):
+    get_url = url+'/api/getfilecopies'
+    update_url = url+'/api/filecopy/setcopied/'
+    if not 'ADMIN_TOKEN' in app.config:
+        print 'ADMIN_TOKEN not set.. aborting'
+        return
+    print 'fetching stuff from %s' % get_url
+    response = requests.get(get_url,headers={'auth_token':app.config['ADMIN_TOKEN']})
+    if not response.status_code == 200:
+        print 'got http status %s .. something went wrong' %response.status_code
+        return
+    result = response.json()['results']
+    for filecopy in result:
+        basepath = os.path.join(directory,filecopy['username'])
+        if not os.path.exists(basepath):
+            os.mkdir(basepath)
+        filepath = os.path.join(filecopy['filepath'],filecopy['filename'])
+        print 'copying file: %s' % filepath
+        try:
+            shutil.copy(filepath,basepath)
+        except:
+            continue
+        requests.get(update_url+filecopy['id']) 
 
 if __name__ == "__main__":
     manager.run()

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}TV Show Listing{% endblock %}
+
+
+{% block page_content %}
+<h1>Episodes for {{show.c00}}</h1>
+	<table class="table">
+        <thead>
+        <tr>
+            <td>Episode</td>
+			<td>Name</td>
+            <td>Mark</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for episode in episodes %}
+         <tr>    
+			<a name="{{episode.idEpisode}}"></a>
+			<td>{{ '%sx%s' % (episode.c12, episode.c13)}}</td>
+            <td>{{episode.c00}}</td>
+			<td><p><a href="{{url_for('add_episode',episodeid=episode.idEpisode)}}" {% if episode.idFile not in filecopies %} class="btn btn-primary">Mark {% else %} {%if filecopies[episode.idFile].copied %} class="btn btn-success">Copied {% else %} class="btn btn-default">Marked {% endif %} {% endif %} </a></p></td> 
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

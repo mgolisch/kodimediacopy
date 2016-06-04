@@ -1,5 +1,7 @@
 #python
 *.pyc
+*.swp
 #instance config
 instance/*
 .idea/*
+fabfile.py
