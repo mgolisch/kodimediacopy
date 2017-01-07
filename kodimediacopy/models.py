@@ -6,8 +6,8 @@ class User(db.Model):
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=True)
-    uuid = db.Column(db.String)
+    username = db.Column(db.String(250), unique=True)
+    uuid = db.Column(db.String(250))
 
     def __init__(self, username):
         self.username = username
@@ -20,9 +20,9 @@ class User(db.Model):
 class FileCopy(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fileid = db.Column(db.Integer)
-    filename = db.Column(db.String)
-    filepath = db.Column(db.String)
-    type = db.Column(db.String) #tv or movie
+    filename = db.Column(db.String(250))
+    filepath = db.Column(db.String(250))
+    type = db.Column(db.String(50)) #tv or movie
     userid = db.Column(db.Integer,db.ForeignKey('user.id'))
     user = db.relationship('User',backref=db.backref('filecopies',lazy='dynamic')) 
     copied = db.Column(db.Boolean,default=False)
@@ -44,6 +44,6 @@ class FileCopy(db.Model):
 
 class Posters(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String) #tv or movie
-    imgdata = db.Column(db.Text) # base64 encoded image data using data-uri notation
-    apiid = db.Column(db.String) # imdbid|movies or tvdbid|tv , maybe anidbid|anime in future
+    type = db.Column(db.String(50)) #tv or movie
+    imgdata = db.Column(db.Text(4294967295)) # base64 encoded image data using data-uri notation| force mysql longtext
+    apiid = db.Column(db.String(250)) # imdbid|movies or tvdbid|tv , maybe anidbid|anime in future
