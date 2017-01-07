@@ -3,11 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask.ext.bootstrap import Bootstrap
 
 
-app = Flask(__name__, instance_relative_config=True)
+app = Flask(__name__)
 app.config.from_object('kodimediacopy.default_settings')
-app.config.from_pyfile('config.py', silent=True)
 if app.config['SECRET_KEY'] is None:
     raise Exception('no secret key in config')
+if app.config['SQLALCHEMY_DATABASE_URI'] is None:
+    raise Exception('app database not configured')
+if app.config['SQLALCHEMY_BINDS']['kodi'] is None:
+    raise Exception('kodi database not configured')
 db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
 

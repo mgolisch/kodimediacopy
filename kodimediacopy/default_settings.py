@@ -1,7 +1,9 @@
-from kodimediacopy import app
+import os
 
 SQLALCHEMY_TRACK_MODIFICATIONS = True
-SQLALCHEMY_DATABASE_URI = 'sqlite:///%s/kodimediacopy.db' % app.instance_path # place default sqlitedb in instance folder, can be overidden by instance config
+SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI', None)
 SQLALCHEMY_BINDS = {
-    'kodi':        'mysql://kodi:kodi@htpc/MyVideos93'
+    'kodi':        os.environ.get('KODI_DATABASE_URI', None)
 }
+SECRET_KEY = os.environ.get('SECRET_KEY', None)
+ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', None)
