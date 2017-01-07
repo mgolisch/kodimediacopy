@@ -6,7 +6,6 @@ from kodimediacopy.models import User, Posters, FileCopy
 from kodimediacopy.kodimodels import Movie, Tvshow
 manager = Manager(app)
 
-
 @manager.option('-n', '--name', dest='name', default='admin')
 def adduser(name):
     """
@@ -102,7 +101,7 @@ def updateart():
         print 'processing %s' % show.c00
         tvdbid = show.c12
         if Posters.query.filter_by(apiid=tvdbid).first() is not None:
-            print 'skipping %s as it is allready in the database' % show.c00 
+            print 'skipping %s as it is allready in the database' % show.c00
             continue
         try:
             tvdbshow = t[int(tvdbid)]
@@ -127,7 +126,7 @@ def updateart():
 @manager.option('-d','--directory',dest='directory',default='/mnt/usb/mediacopy/')
 def copyfiles(directory):
     for user in User.query.all():
-        print 'processing files for user: %s' % user.username 
+        print 'processing files for user: %s' % user.username
         basepath = os.path.join(directory,user.username)
         if not os.path.exists(basepath):
             os.mkdir(basepath)
@@ -146,7 +145,7 @@ def copyfiles(directory):
 @manager.option('-d','--directory',dest='directory',default='/mnt/usb/mediacopy/')
 @manager.option('-u','--url',dest='url',default='http://127.0.0.1:5000')
 def copyfiles_remote(directory,url):
-    get_url = url+'/api/getfilecopies'
+    get_url = url+'/api/filecopy'
     update_url = url+'/api/filecopy/setcopied/'
     if not 'ADMIN_TOKEN' in app.config:
         print 'ADMIN_TOKEN not set.. aborting'
@@ -165,9 +164,10 @@ def copyfiles_remote(directory,url):
         print 'copying file: %s' % filepath
         try:
             shutil.copy(filepath,basepath)
-        except:
+        except OSError as why:
+            print 'error: %s' % why.message
             continue
-        requests.get(update_url+filecopy['id']) 
+        requests.get(update_url+str(filecopy['id']),headers={'auth_token':app.config['ADMIN_TOKEN']})
 
 if __name__ == "__main__":
     manager.run()
