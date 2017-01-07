@@ -5,9 +5,6 @@ from flask import render_template, redirect, session, flash, url_for, jsonify, a
 from functools import wraps
 
 # helper #
-
-
-
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -38,7 +35,7 @@ def build_streaminfo_dict(list_of_fileids):
             self.videostreams = []
             self.subtilestreams = []
 
-        def add_stream(self ,streaminfo):
+        def add_stream(self, streaminfo):
             if streaminfo.iStreamType == 0: # video
                 self.videostreams.append('res: %sx%s | codec: %s | aspect: %s' % (streaminfo.iVideoWidth, streaminfo.iVideoHeight, streaminfo.strVideoCodec, streaminfo.fVideoAspect))
             if streaminfo.iStreamType == 1: # audio
@@ -83,8 +80,6 @@ def build_streaminfo_dict(list_of_fileids):
     return streaminfocollection
 
 # views #
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -188,14 +183,16 @@ def delete_mark(id):
     return redirect(url_for('manage_marks'))
 
 #remote api for manage.py copyfiles
-@app.route('/api/getfilecopies')
+@app.route('/api/filecopy')
 @api
 def api_get_filecopies():
-    return jsonify(results=[filecopy.serialize() for filecopy in  FileCopy.query.all()])
+    return jsonify(results=[filecopy.serialize() for filecopy in  FileCopy.query.filter(FileCopy.copied==0).all()])
 
 @app.route('/api/filecopy/setcopied/<int:id>')
 @api
 def api_set_copied(id):
-    filecopy = FileCopy.get(id)
+    filecopy = FileCopy.query.get(id)
+    filecopy.copied = True
     db.session.add(filecopy)
     db.session.commit()
+    return '200' 
