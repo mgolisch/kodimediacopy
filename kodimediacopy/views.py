@@ -1,8 +1,9 @@
 from kodimediacopy import app, db
 from kodimediacopy.models import User, Posters, FileCopy
 from kodimediacopy.kodimodels import Movie, File, t_streamdetails, Tvshow, Path, t_episode_view
-from flask import render_template, redirect, session, flash, url_for, jsonify, abort, request, make_response
+from flask import render_template, redirect, session, flash, url_for, jsonify, request, make_response
 from functools import wraps
+from sqlalchemy import Integer, cast
 
 # helper #
 def login_required(f):
@@ -131,10 +132,10 @@ def show_tv():
 def show_tv_episodes(id):
     userid = session['user_id']
     show = Tvshow.query.filter(Tvshow.idShow == id).first_or_404()
-    episodes = db.session.query(t_episode_view).filter(t_episode_view.c.idShow == id).order_by(t_episode_view.c.c12).all()
+    episodes = db.session.query(t_episode_view).filter(t_episode_view.c.idShow == id).order_by(cast(t_episode_view.c.c12,Integer),cast(t_episode_view.c.c13,Integer)).all()
     streaminfo_dict = build_streaminfo_dict([episode.idFile for episode in episodes])
     filecopies = {filecopy.fileid: filecopy for filecopy in FileCopy.query.filter_by(userid=userid).all()}
-    return render_template('shows_episodes.html',  show=show,episodes=episodes, streaminfo_dict=streaminfo_dict,filecopies=filecopies)
+    return render_template('shows_episodes.html', show=show, episodes=episodes, streaminfo_dict=streaminfo_dict, filecopies=filecopies)
 
 @app.route('/movies/add/<string:fileid>')
 @login_required
@@ -143,7 +144,7 @@ def add_movie(fileid):
     path = Path.query.filter_by(idPath=file.idPath).first()
     filecopy = FileCopy()
     filecopy.fileid = fileid
-    filecopy.type='movie'
+    filecopy.type = 'movie'
     filecopy.filename = file.strFilename
     filecopy.filepath = path.strPath
     filecopy.userid = session['user_id']
@@ -158,7 +159,7 @@ def add_episode(episodeid):
     episode = db.session.query(t_episode_view).filter(t_episode_view.c.idEpisode == episodeid).first()
     filecopy = FileCopy()
     filecopy.fileid = episode.idFile
-    filecopy.type='show'
+    filecopy.type = 'show'
     filecopy.filename = episode.strFileName
     filecopy.filepath = episode.strPath
     filecopy.userid = session['user_id']
@@ -195,4 +196,4 @@ def api_set_copied(id):
     filecopy.copied = True
     db.session.add(filecopy)
     db.session.commit()
-    return '200' 
+    return '200'
