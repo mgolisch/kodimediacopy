@@ -1,3 +1,4 @@
+import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask.ext.bootstrap import Bootstrap
@@ -13,6 +14,10 @@ if app.config['SQLALCHEMY_BINDS']['kodi'] is None:
     raise Exception('kodi database not configured')
 db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
+
+stream_handler = logging.StreamHandler()
+app.logger.addHandler(stream_handler)
+app.logger.setLevel(logging.INFO)
 
 import kodimediacopy.models
 import kodimediacopy.views
