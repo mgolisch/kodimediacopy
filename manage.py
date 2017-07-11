@@ -96,7 +96,7 @@ def updateart():
             continue
     print 'updating art for tv'
     from tvdb_api import Tvdb
-    t = Tvdb(banners = True)
+    t = Tvdb(banners=True)
     for show in Tvshow.query.all():
         print 'processing %s' % show.c00
         tvdbid = show.c12
@@ -123,18 +123,18 @@ def updateart():
 
 
 
-@manager.option('-d','--directory',dest='directory',default='/mnt/usb/mediacopy/')
+@manager.option('-d', '--directory', dest='directory', default='/mnt/usb/mediacopy/')
 def copyfiles(directory):
     for user in User.query.all():
         print 'processing files for user: %s' % user.username
-        basepath = os.path.join(directory,user.username)
+        basepath = os.path.join(directory, user.username)
         if not os.path.exists(basepath):
             os.mkdir(basepath)
         for filecopy in FileCopy.query.filter_by(userid=user.id).all():
-            filepath = os.path.join(filecopy.filepath,filecopy.filename)
+            filepath = os.path.join(filecopy.filepath, filecopy.filename)
             print 'copying file: %s' % filepath
             try:
-                shutil.copy(filepath,basepath)
+                shutil.copy(filepath, basepath)
             except:
                 continue
             filecopy.copied = True
@@ -142,32 +142,32 @@ def copyfiles(directory):
             db.session.commit()
 
 
-@manager.option('-d','--directory',dest='directory',default='/mnt/usb/mediacopy/')
-@manager.option('-u','--url',dest='url',default='http://127.0.0.1:5000')
-def copyfiles_remote(directory,url):
+@manager.option('-d', '--directory', dest='directory', default='/mnt/usb/mediacopy/')
+@manager.option('-u', '--url', dest='url', default='http://127.0.0.1:5000')
+def copyfiles_remote(directory, url):
     get_url = url+'/api/filecopy'
     update_url = url+'/api/filecopy/setcopied/'
-    if not 'ADMIN_TOKEN' in app.config:
+    if 'ADMIN_TOKEN' not in app.config:
         print 'ADMIN_TOKEN not set.. aborting'
         return
     print 'fetching stuff from %s' % get_url
-    response = requests.get(get_url,headers={'auth_token':app.config['ADMIN_TOKEN']})
+    response = requests.get(get_url, headers={'auth_token':app.config['ADMIN_TOKEN']})
     if not response.status_code == 200:
         print 'got http status %s .. something went wrong' %response.status_code
         return
     result = response.json()['results']
     for filecopy in result:
-        basepath = os.path.join(directory,filecopy['username'])
+        basepath = os.path.join(directory, filecopy['username'])
         if not os.path.exists(basepath):
             os.mkdir(basepath)
-        filepath = os.path.join(filecopy['filepath'],filecopy['filename'])
+        filepath = os.path.join(filecopy['filepath'], filecopy['filename'])
         print 'copying file: %s' % filepath
         try:
-            shutil.copy(filepath,basepath)
+            shutil.copy(filepath, basepath)
         except OSError as why:
             print 'error: %s' % why.message
             continue
-        requests.get(update_url+str(filecopy['id']),headers={'auth_token':app.config['ADMIN_TOKEN']})
+        requests.get(update_url+str(filecopy['id']), headers={'auth_token':app.config['ADMIN_TOKEN']})
 
 if __name__ == "__main__":
     manager.run()
