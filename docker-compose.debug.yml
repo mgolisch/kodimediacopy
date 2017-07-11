@@ -1,0 +1,26 @@
+
+version: '2'
+
+services:
+  web:
+    image: kodimediacopy:latest
+    environment: 
+      - DATABASE_URI=mysql://kodi:kodi@db/kodi
+      - KODI_DATABASE_URI=mysql://kodi:kodi@db/kodi
+      - SECRET_KEY=secret
+      - ADMIN_TOKEN=secret
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    volumes: 
+      - ./:/app
+  
+  db:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=kodi
+      - MYSQL_USER=kodi
+      - MYSQL_PASSWORD=kodi
